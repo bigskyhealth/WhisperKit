@@ -841,19 +841,21 @@ public extension AudioProcessor {
 
         let bufferSize = AVAudioFrameCount(minBufferLength) // 100ms - 400ms supported
         inputNode.installTap(onBus: 0, bufferSize: bufferSize, format: nodeFormat) { [weak self] (buffer: AVAudioPCMBuffer, _: AVAudioTime) in
-            guard let self = self else { return }
-            var buffer = buffer
-            if !buffer.format.sampleRate.isEqual(to: Double(WhisperKit.sampleRate)) {
-                do {
-                    buffer = try Self.resampleBuffer(buffer, with: converter)
-                } catch {
-                    Logging.error("Failed to resample buffer: \(error)")
-                    return
+            Task {
+                guard let self = self else { return }
+                var buffer = buffer
+                if !buffer.format.sampleRate.isEqual(to: Double(WhisperKit.sampleRate)) {
+                    do {
+                        buffer = try Self.resampleBuffer(buffer, with: converter)
+                    } catch {
+                        Logging.error("Failed to resample buffer: \(error)")
+                        return
+                    }
                 }
-            }
 
-            let newBufferArray = Self.convertBufferToArray(buffer: buffer)
-            self.processBuffer(newBufferArray)
+                let newBufferArray = Self.convertBufferToArray(buffer: buffer)
+                self.processBuffer(newBufferArray)
+            }
         }
 
         audioEngine.prepare()
