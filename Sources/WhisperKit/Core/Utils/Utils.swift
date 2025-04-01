@@ -2,7 +2,10 @@
 //  Copyright © 2024 Argmax, Inc. All rights reserved.
 
 import AVFoundation
+
+@preconcurrency
 import CoreML
+
 import Foundation
 import Hub
 import os.signpost
@@ -151,6 +154,7 @@ public extension MLTensor {
         return result
     }
 
+    /*
     func asMLMultiArray() -> MLMultiArray {
         let semaphore = DispatchSemaphore(value: 0)
         let tensorType = self.scalarType
@@ -176,6 +180,7 @@ public extension MLTensor {
         semaphore.wait()
         return result
     }
+     */
 }
 #endif
 
@@ -809,10 +814,13 @@ public func compressionRatio(of text: String) -> Float {
 }
 
 public func logCurrentMemoryUsage(_ message: String) {
+    /*
     let memoryUsage = getMemoryUsage()
     Logging.debug("\(message) - Memory usage: \(memoryUsage) MB")
+     */
 }
 
+/*
 public func getMemoryUsage() -> UInt64 {
     var info = mach_task_basic_info()
     var count = mach_msg_type_number_t(MemoryLayout<mach_task_basic_info>.size) / 4
@@ -829,10 +837,12 @@ public func getMemoryUsage() -> UInt64 {
 
     return info.resident_size / 1024 / 1024 // Convert to MB
 }
+*/
 
 // MARK: - Singletons
 
-open class Logging {
+public final class Logging: @unchecked Sendable {
+
     public static let shared = Logging()
     public var logLevel: LogLevel = .none
 

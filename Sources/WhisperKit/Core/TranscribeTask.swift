@@ -6,7 +6,7 @@ import Foundation
 
 /// Responsible for transcribing audio chunk to text using the provided models and configurations.
 @available(macOS 13, iOS 16, watchOS 10, visionOS 1, *)
-final class TranscribeTask {
+final class TranscribeTask: @unchecked Sendable {
     private var timings: TranscriptionTimings
     private let progress: Progress
     private let audioEncoder: any AudioEncoding
@@ -149,7 +149,7 @@ final class TranscribeTask {
                 Logging.info("Decoding \(formatTimestamp(timeOffset))s - \(formatTimestamp(timeOffsetEnd))s")
 
                 // Overload progress callback to include windowId
-                let decodingCallback: ((TranscriptionProgress) -> Bool?) = { [weak self] progress in
+                let decodingCallback: TranscriptionCallback = { [weak self] progress in
                     guard let self = self, let callback = callback else { return nil }
                     var windowProgress = progress
                     windowProgress.windowId = Int(self.timings.totalDecodingWindows - self.timings.totalDecodingFallbacks)

@@ -3,7 +3,10 @@
 
 import Accelerate
 import AVFAudio
+
+@preconcurrency
 import CoreML
+
 import Hub
 import NaturalLanguage
 import Tokenizers
@@ -167,7 +170,7 @@ public struct ModelComputeOptions {
     }
 }
 
-public struct ModelSupport: Codable, Equatable {
+public struct ModelSupport: Codable, Equatable, Sendable {
     public let `default`: String
     public let supported: [String]
     /// Computed on init of ModelRepoConfig
@@ -188,7 +191,7 @@ public struct ModelSupport: Codable, Equatable {
     }
 }
 
-public struct DeviceSupport: Codable {
+public struct DeviceSupport: Codable, Sendable {
     public let identifiers: [String]
     public var models: ModelSupport
 
@@ -198,7 +201,7 @@ public struct DeviceSupport: Codable {
     }
 }
 
-public struct ModelSupportConfig: Codable {
+public struct ModelSupportConfig: Codable, Sendable {
     public let repoName: String
     public let repoVersion: String
     public var deviceSupports: [DeviceSupport]
@@ -541,7 +544,7 @@ public enum WhisperError: Error, LocalizedError, Equatable {
 
 // Structs
 
-public struct TranscriptionResult: Codable {
+public struct TranscriptionResult: Codable, Sendable {
     public var text: String
     public var segments: [TranscriptionSegment]
     public var language: String
@@ -644,7 +647,7 @@ public extension TranscriptionResult {
     }
 }
 
-public struct TranscriptionSegment: Hashable, Codable {
+public struct TranscriptionSegment: Hashable, Codable, Sendable {
     public var id: Int
     public var seek: Int
     public var start: Float
@@ -692,7 +695,7 @@ public struct TranscriptionSegment: Hashable, Codable {
     }
 }
 
-public struct WordTiming: Hashable, Codable {
+public struct WordTiming: Hashable, Codable, Sendable {
     public var word: String
     public var tokens: [Int]
     public var start: Float
@@ -713,7 +716,7 @@ public struct WordTiming: Hashable, Codable {
     }
 }
 
-public struct TranscriptionProgress {
+public struct TranscriptionProgress: Sendable {
     public var timings: TranscriptionTimings
     public var text: String
     public var tokens: [Int]
@@ -785,9 +788,9 @@ public enum TranscriptionState: CustomStringConvertible {
 ///   - `false`: Stop the transcription process early.
 ///   - `nil`: Continue the transcription process (equivalent to returning `true`).
 /// - Note: This callback should be lightweight and return as quickly as possible to avoid extra decoding loops
-public typealias TranscriptionCallback = ((TranscriptionProgress) -> Bool?)?
+public typealias TranscriptionCallback = (@Sendable (TranscriptionProgress) -> Bool?)?
 
-public struct TranscriptionTimings: Codable {
+public struct TranscriptionTimings: Codable, Sendable {
     public var pipelineStart: CFAbsoluteTime
     public var firstTokenTime: CFAbsoluteTime
     public var inputAudioSeconds: TimeInterval
